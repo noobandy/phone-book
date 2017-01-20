@@ -1,5 +1,7 @@
 package test;
 
+import java.util.Arrays;
+
 public class ThreadDeadLock {
 
 	public static void main(String[] args) throws InterruptedException {
@@ -56,5 +58,9 @@ public class ThreadDeadLock {
 		System.out.println("Interrupting T1");
 		
 		threadOne.interrupt();
+		int arr[] = new int[]{64630,11735,14216,99233,14470,4978,73429,38120,51135,67060};
+		Arrays.sort(arr);
+		System.out.println(Arrays.toString(arr));
+		System.out.println((arr[arr.length / 2] + arr[(arr.length + 2) / 2]) / 2);
 	}
 }

@@ -1,6 +1,5 @@
 package test;
 
-
 public class WaitNotify {
 
 	static class Producer {
@@ -9,18 +8,21 @@ public class WaitNotify {
 			super();
 		}
 
-		synchronized void produce(StringBuilder builder) {
-			System.out.println("Producer: Producing data....");
-			try {
-				Thread.currentThread().sleep(1000);
-			} catch (InterruptedException e) {
-				System.out.println("Producer interrupted");
+		void produce(StringBuilder builder) {
+
+			synchronized (builder) {
+				while (builder.length() != 0) {
+					try {
+						builder.wait();
+					} catch (InterruptedException e) {
+					}
+				}
+				builder.append("data");
+				// notify data available
+				builder.notifyAll();
+
 			}
-			
-			builder.append("data");
-			System.out.println("Producer: Data produced. notify all");
-			//notify data available
-			notifyAll();
+
 		}
 	}
 
@@ -30,28 +32,25 @@ public class WaitNotify {
 			super();
 		}
 
-		synchronized void consume(StringBuilder builder) {
-			if (builder.length() == 0) {
-				System.out.println("Consumer: data not available");
-				try {
-					//wait until data becomes available
-					System.out.println("Consumer: wait untill data becomes available");
-					wait();
-				} catch (InterruptedException e) {
-					System.out.println("Consumer: interrupted");
-					if(builder.length() > 0) {
-						System.out.println("Consumer: Finally data is available");
-						System.out.format("Data %s%n", builder.toString());
-					}
-					
-				}
+		void consume(StringBuilder builder) {
 
+			synchronized (builder) {
+				while (builder.length() == 0) {
+					try {
+						builder.wait();
+					} catch (InterruptedException e) {
+
+					}
+				}
+				System.out.format("%s%n", builder.toString());
+				builder.delete(0, builder.length());
+				builder.notifyAll();
 			}
 
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 
 		final Producer producer = new Producer();
 
@@ -63,7 +62,10 @@ public class WaitNotify {
 
 			@Override
 			public void run() {
-				producer.produce(builder);
+				for (int i = 0; i < 5; i++) {
+					producer.produce(builder);
+				}
+
 			}
 		});
 
@@ -71,12 +73,15 @@ public class WaitNotify {
 
 			@Override
 			public void run() {
-				consumer.consume(builder);
+				for (int i = 0; i < 5; i++) {
+					consumer.consume(builder);
+				}
+
 			}
 		});
 
-		producerThread.start();
 		consumerThread.start();
+		producerThread.start();
 
 	}
 }
