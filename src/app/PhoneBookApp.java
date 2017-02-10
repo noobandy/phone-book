@@ -1,12 +1,7 @@
 package app;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Scanner;
@@ -15,6 +10,8 @@ import menumanager.MenuCommand;
 import menumanager.MenuManager;
 import phonebook.Contact;
 import phonebook.PhoneBook;
+import phonebook.PhoneBookDAO;
+import data.FilePhoneBookDAO;
 
 /**
  * Phone Book application
@@ -24,41 +21,7 @@ import phonebook.PhoneBook;
  */
 public class PhoneBookApp {
 
-	private static final String DATA_FILE_NAME = "phonebook.dat";
 	private static final String ERROR_FILE_NAME = "error.log";
-
-	private static PhoneBook initializePhoneBook() {
-		PhoneBook phoneBook = null;
-		File phoneBookData = new File(DATA_FILE_NAME);
-
-		if (phoneBookData.exists()) {
-			ObjectInputStream in = null;
-			try {
-				in = new ObjectInputStream(new FileInputStream(phoneBookData));
-				phoneBook = (PhoneBook) in.readObject();
-			} catch (FileNotFoundException e) {
-				System.err.println(e.getMessage());
-			} catch (IOException e) {
-				System.err.println(e.getMessage());
-			} catch (ClassNotFoundException e) {
-				System.err.println(e.getMessage());
-			} finally {
-				if (in != null) {
-					try {
-						in.close();
-					} catch (IOException e) {
-						System.err.println(e.getMessage());
-					}
-				}
-			}
-		}
-
-		if (phoneBook == null) {
-			phoneBook = new PhoneBook();
-		}
-
-		return phoneBook;
-	}
 
 	private static void displayContacts(List<Contact> contacts) {
 
@@ -71,37 +34,26 @@ public class PhoneBookApp {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		try {
 			System.setErr(new PrintStream(new File(ERROR_FILE_NAME)));
 		} catch (FileNotFoundException e1) {
 			System.out
 					.println("unable to change error stream. default is console");
 		}
+		final PhoneBookDAO phoneBookDAO = new FilePhoneBookDAO();
 
-		final PhoneBook phoneBook = initializePhoneBook();
+		final PhoneBook phoneBook  = phoneBookDAO.getPhoneBook();;
+		
 
 		MenuManager menuManager = new MenuManager(new MenuCommand() {
 
 			@Override
 			public void execute(Scanner scanner) {
-				ObjectOutputStream out = null;
 				try {
-					out = new ObjectOutputStream(new FileOutputStream(new File(
-							DATA_FILE_NAME)));
-					out.writeObject(phoneBook);
-				} catch (FileNotFoundException e) {
-					System.err.println(e.getMessage());
-				} catch (IOException e) {
-					System.err.println(e.getMessage());
-				} finally {
-					if (out != null) {
-						try {
-							out.close();
-						} catch (IOException e) {
-							System.err.println(e.getMessage());
-						}
-					}
+					phoneBookDAO.savePhoneBook(phoneBook);
+				} catch (Exception e) {
+					System.err.print(e);
 				}
 
 			}
