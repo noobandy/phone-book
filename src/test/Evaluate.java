@@ -4,6 +4,50 @@ import java.util.Stack;
 
 public class Evaluate {
 
+	
+
+	public static class ExpressionTokeniser {  
+		public static class ExpressionToken {
+			public enum ExpressionTokenType {
+				OPERATOR,OPERAND,PARENTHESES;
+			}
+			
+			private ExpressionTokenType type;
+			private String value;
+			public ExpressionToken(ExpressionTokenType type, String value) {
+				super();
+				this.type = type;
+				this.value = value;
+			}
+			public ExpressionTokenType getType() {
+				return type;
+			}
+			public String getValue() {
+				return value;
+			}
+			
+			
+		}
+		
+		private String expression;
+		private int currentIndex;
+
+		public ExpressionTokeniser(String expression) {
+			super();
+			this.expression = expression;
+			currentIndex = 0;
+		}
+		
+		public ExpressionToken nextToken() {
+			if(currentIndex < expression.length()) {
+				StringBuilder tokenBuilder = new StringBuilder();
+				
+			} else {
+				return null;
+			}
+			return null;
+		}
+	}
 	public static void main(String[] args) {
 
 		if (args.length == 0) {
